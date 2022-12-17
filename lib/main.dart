@@ -1,5 +1,10 @@
-import 'package:call_app/ki%C5%9Fi.dart';
+import 'package:call_app/kayit.dart';
+import 'package:call_app/kisi.dart';
+import 'package:call_app/kisiler.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -16,19 +21,38 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.deepPurple,
       ),
-      home: const MyHomePage(),
+      home: const AnaSayfa(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class AnaSayfa extends StatefulWidget {
+  const AnaSayfa({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<AnaSayfa> createState() => _AnaSayfaState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _AnaSayfaState extends State<AnaSayfa> {
+
+
+  bool aramaYapiliyorMu=false;
+  String aramaKelimesi="";
+
+  Future<List<kisiler>> tumKisileriGoster() async{
+    var kisilerListesi=<kisiler>[];
+
+    var kisi1=kisiler(1, "Berkan Yasin", "Alpay", "905304490360");
+    kisilerListesi.add(kisi1);
+    return kisilerListesi;
+  }
+
+  Future<void > sil(int kisi_id) async{
+    print("$kisi_id silindi");
+    setState(() {
+
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +75,44 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       //body de listview kullanacaz verileri buradan aratacaz
       //isim soyisim numara vs vs.
-      body: Center(
-        child: ElevatedButton(
-          child: Text("Bas"),
-          onPressed: (){
-            Navigator.push(context,MaterialPageRoute(builder: (context)=>kisi()));
-          },
-        ),
+      body: FutureBuilder<List<kisiler>>(
+        future: tumKisileriGoster(),
+        builder: (context,snapshot){
+          if(snapshot.hasData){
+            var kisilerListesi=snapshot.data;
+            return ListView.builder(
+              itemCount:kisilerListesi!.length,
+              itemBuilder: (context, index){
+                var kisi=kisilerListesi[index];
+                return GestureDetector(
+                  onTap: (){
+                    Navigator.push(context,MaterialPageRoute(builder: (context)=>kayit()));
+                  },
+                  child: Card(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(kisi.name,style:TextStyle(fontWeight: FontWeight.bold)),
+                        Text(kisi.rename,style: TextStyle(),),
+                        Text(kisi.number),
+                        IconButton(icon: Icon(Icons.call),
+                        onPressed: () async{
+                          FlutterPhoneDirectCaller.callNumber(kisi.number);
+                        },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          else{
+            return Center();
+          }
+        },
       ),
     );
   }
 }
+
